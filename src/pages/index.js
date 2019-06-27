@@ -1,21 +1,57 @@
 import React from "react"
-import { Link } from "gatsby"
-
-import Layout from "../components/layout"
-import Image from "../components/image"
+import { Link, graphql } from "gatsby"
 import SEO from "../components/seo"
 
-const IndexPage = () => (
-  <Layout>
-    <SEO title="Home" />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <div style={{ maxWidth: `300px`, marginBottom: `1.45rem` }}>
-      <Image />
+const IndexPage = props => {
+  const { data } = props
+  const posts = data.allMdx.edges
+  return (
+    <div>
+      <SEO title="Home" />
+      <h1>Welcome to {data.site.siteMetadata.title}</h1>
+      <ul>
+        {posts.map((post, i) => {
+          const {
+            node: {
+              frontmatter: { title, date, slug },
+              excerpt,
+            },
+          } = post
+          return (
+            <li key={i}>
+              <h3>
+                <Link to={"/blog/" + slug}>{title}</Link>
+              </h3>
+              <small>{date}</small>
+              <p> {excerpt} </p>
+            </li>
+          )
+        })}
+      </ul>
     </div>
-    <Link to="/page-2/">Go to page 2</Link>
-  </Layout>
-)
+  )
+}
 
 export default IndexPage
+
+export const pageQuery = graphql`
+  query {
+    site {
+      siteMetadata {
+        title
+      }
+    }
+    allMdx(sort: { fields: [frontmatter___date], order: DESC }) {
+      edges {
+        node {
+          excerpt
+          frontmatter {
+            slug
+            date(formatString: "MMMM DD, YYYY")
+            title
+          }
+        }
+      }
+    }
+  }
+`
